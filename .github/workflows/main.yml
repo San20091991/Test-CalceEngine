@@ -30,6 +30,8 @@ jobs:
     name: Deploy to Production 
     needs: [DeployStaging]
     runs-on: ubuntu-latest
+    environment:
+      name: Production
     steps:
       - uses: actions/checkout@master
       - name: Merge staging -> production
