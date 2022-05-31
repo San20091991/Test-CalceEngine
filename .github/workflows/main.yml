@@ -1,0 +1,41 @@
+name: CICD- WORKFLOW with Protected Development Branch
+on:
+  pull_request:
+    types: [closed]
+    branches: [ Development  ]
+  workflow_dispatch:
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile
+        run: echo Hello, world!
+  DeployStaging:
+    name: Deploy to Staging 
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: Staging
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge development -> staging
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: Development
+          target_branch: Staging
+          github_token: ${{ secrets.GITHUB_TOKEN }}   
+  DeployPrduction:
+    name: Deploy to Production 
+    needs: [DeployStaging]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge staging -> production
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: Staging
+          target_branch: Production
+          github_token: ${{ secrets.GITHUB_TOKEN }}
