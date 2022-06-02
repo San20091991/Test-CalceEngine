@@ -25,7 +25,22 @@ jobs:
           type: now
           from_branch: Development
           target_branch: Staging
-          github_token: ${{ secrets.GITHUB_TOKEN }}   
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  DeployUAT:
+    name: Deploy to UAT
+    needs: [DeployStaging]
+    runs-on: ubuntu-latest
+    environment:
+      name: UAT
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge staging -> UAT
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: Staging
+          target_branch: UAT
+          github_token: ${{ secrets.GITHUB_TOKEN }} 
   DeployProduction:
     name: Deploy to Production 
     needs: [DeployStaging]
