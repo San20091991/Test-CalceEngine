@@ -39,7 +39,7 @@ jobs:
         with:
           type: now
           from_branch: Staging
-          target_branch: Production
+          target_branch: PRD
           github_token: ${{ secrets.GITHUB_TOKEN }}
   release:
     name: Create Release
