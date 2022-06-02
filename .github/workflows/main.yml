@@ -34,7 +34,7 @@ jobs:
       name: Production
     steps:
       - uses: actions/checkout@master
-      - name: Merge staging -> production
+      - name: Merge Staging -> Production
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
