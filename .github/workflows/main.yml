@@ -1,4 +1,4 @@
-name: CICD- WORKFLOW with Protected Development Branch-testing-500
+name: CICD- WORKFLOW with Protected Development Branch-testing-600
 on:
   pull_request:
     types: [closed]
