@@ -1,0 +1,70 @@
+name: CICD -testing 5
+on:
+  pull_request:
+    types: [closed]
+    branches: [ DEV  ]
+  workflow_dispatch:
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile
+        run: echo Hello, world!
+  DeployQA:
+    name: Deploy to QA 
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: QA
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge DEV -> QA
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: DEV
+          target_branch: QA
+          github_token: ${{ secrets.GITHUB_TOKEN }}   
+  DeployUAT:
+    name: Deploy to UAT
+    needs: [DeployQA]
+    runs-on: ubuntu-latest
+    environment:
+      name: UAT
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge QA -> UAT
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: QA
+          target_branch: UAT
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  DeployPRD:
+    name: Deploy to PRD
+    needs: [DeployUAT]
+    runs-on: ubuntu-latest
+    environment:
+      name: PRD
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge UAT -> PRD
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: UAT
+          target_branch: PRD
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    name: Create Release
+    needs: [DeployPRD]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
