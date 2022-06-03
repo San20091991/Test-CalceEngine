@@ -1,8 +1,8 @@
-name: CICD -testing 5
+name: CICD workflow
 on:
   pull_request:
     types: [closed]
-    branches: [ DEV  ]
+    branches: [ DEVLOPE  ]
   workflow_dispatch:
 jobs:
   Build:
@@ -11,54 +11,54 @@ jobs:
       - uses: actions/checkout@v2
       - name: Compile
         run: echo Hello, world!
-  DeployQA:
-    name: Deploy to QA 
+  DeployQA-STAGING:
+    name: Deploy to QA-STAGING 
     needs: [Build]
     runs-on: ubuntu-latest
     environment:
-      name: QA
+      name: QA-STAGING
     steps:
       - uses: actions/checkout@master
-      - name: Merge DEV -> QA
+      - name: Merge DEVLOPE -> QA-STAGING
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
-          from_branch: DEV
-          target_branch: QA
+          from_branch: DEVLOPE
+          target_branch: QA-STAGING
           github_token: ${{ secrets.GITHUB_TOKEN }}   
-  DeployUAT:
-    name: Deploy to UAT
-    needs: [DeployQA]
+  DeployUAT-STAGING:
+    name: Deploy to UAT-STAGING
+    needs: [DeployQA-STAGING]
     runs-on: ubuntu-latest
     environment:
-      name: UAT
+      name: UAT-STAGING
     steps:
       - uses: actions/checkout@master
       - name: Merge QA -> UAT
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
-          from_branch: QA
-          target_branch: UAT
+          from_branch: QA-STAGING
+          target_branch: UAT-STAGING
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  DeployPRD:
-    name: Deploy to PRD
-    needs: [DeployUAT]
+  DeployPROD:
+    name: Deploy to PROD
+    needs: [DeployUAT-STAGING]
     runs-on: ubuntu-latest
     environment:
       name: PRD
     steps:
       - uses: actions/checkout@master
-      - name: Merge UAT -> PRD
+      - name: Merge UAT_STAGING -> PROD
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
-          from_branch: UAT
-          target_branch: PRD
+          from_branch: UAT_STAGING
+          target_branch: PROD
           github_token: ${{ secrets.GITHUB_TOKEN }}
   release:
     name: Create Release
-    needs: [DeployPRD]
+    needs: [DeployPROD]
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub release
