@@ -1,0 +1,70 @@
+name: workflow
+on:
+  pull_request:
+    types: [closed]
+    branches: [ DEVLOPE  ]
+  workflow_dispatch:
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile
+        run: echo Hello, world!
+  DeployQA-STAGING:
+    name: Deploy to QA-STAGING 
+    needs: [Build]
+    runs-on: ubuntu-latest
+    environment:
+      name: QA-STAGING
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge DEVLOPE -> QA-STAGING
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: DEVLOPE
+          target_branch: QA-STAGING
+          github_token: ${{ secrets.GITHUB_TOKEN }}   
+  DeployUAT-STAGING:
+    name: Deploy to UAT-STAGING
+    needs: [DeployQA-STAGING]
+    runs-on: ubuntu-latest
+    environment:
+      name: UAT-STAGING
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge QA -> UAT
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: QA-STAGING
+          target_branch: UAT-STAGING
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  DeployPROD-DEPLOYMENT:
+    name: Deploy to PROD-DEPLOYMENT
+    needs: [DeployUAT-STAGING]
+    runs-on: ubuntu-latest
+    environment:
+      name: PROD-DEPLOYMENT
+    steps:
+      - uses: actions/checkout@master
+      - name: Merge UAT_STAGING -> PROD
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: UAT_STAGING
+          target_branch: PROD-DEPLOYMENT
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    name: Create Release
+    needs: [DeployPROD-DEPLOYMENT]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
