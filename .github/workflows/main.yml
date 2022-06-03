@@ -46,7 +46,7 @@ jobs:
     needs: [DeployUAT-STAGING]
     runs-on: ubuntu-latest
     environment:
-      name: PRD
+      name: PROD
     steps:
       - uses: actions/checkout@master
       - name: Merge UAT_STAGING -> PROD
