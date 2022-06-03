@@ -1,4 +1,4 @@
-name: CICD workflow
+name: CICD workflow-testing 100/*
 on:
   pull_request:
     types: [closed]
