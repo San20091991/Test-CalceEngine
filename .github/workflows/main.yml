@@ -41,12 +41,12 @@ jobs:
           from_branch: QA-STAGING
           target_branch: UAT-STAGING
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  DeployPROD:
-    name: Deploy to PROD
+  DeployPROD-DEPLOYMENT:
+    name: Deploy to PROD-DEPLOYMENT
     needs: [DeployUAT-STAGING]
     runs-on: ubuntu-latest
     environment:
-      name: PROD
+      name: PROD-DEPLOYMENT
     steps:
       - uses: actions/checkout@master
       - name: Merge UAT_STAGING -> PROD
@@ -54,11 +54,11 @@ jobs:
         with:
           type: now
           from_branch: UAT_STAGING
-          target_branch: PROD
+          target_branch: PROD-DEPLOYMENT
           github_token: ${{ secrets.GITHUB_TOKEN }}
   release:
     name: Create Release
-    needs: [DeployPROD]
+    needs: [DeployPROD-DEPLOYMENT]
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub release
